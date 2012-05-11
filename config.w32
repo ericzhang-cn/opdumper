@@ -1,0 +1,13 @@
+// $Id$
+// vim:ft=javascript
+
+// If your extension references something external, use ARG_WITH
+// ARG_WITH("opdumper", "for opdumper support", "no");
+
+// Otherwise, use ARG_ENABLE
+ARG_ENABLE("opdumper", "enable opdumper support", "no");
+
+if (PHP_OPDUMPER != "no") {
+	EXTENSION("opdumper", "opdumper.c");
+}
+
