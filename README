@@ -18,4 +18,7 @@ INSTALL
 
 DUMP OPCODE
 -----------
+* dump opcodes
 	php -dopdumer.active=1 foo.php
+* dump opcodes and keep raw code
+	php -dopdumer.active=1 -dopdumer.raw=1 foo.php
