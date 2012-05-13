@@ -12,7 +12,7 @@
   | obtain it through the world-wide-web, please send a note to          |
   | license@php.net so we can mail you a copy immediately.               |
   +----------------------------------------------------------------------+
-  | Author:                                                              |
+  | Author: Eric Zhang <ericzhang.buaa@gmail.com>                        |
   +----------------------------------------------------------------------+
 */
 
@@ -26,6 +26,7 @@
 #include "php_ini.h"
 #include "ext/standard/info.h"
 #include "php_opdumper.h"
+#include "dumper.h"
 
 static zend_op_array* (*native_compile_file)(zend_file_handle* file_handle, int type TSRMLS_DC);
 static zend_op_array* od_compile_file(zend_file_handle*, int TSRMLS_DC);
@@ -148,6 +149,27 @@ PHP_MINFO_FUNCTION(opdumper)
 	DISPLAY_INI_ENTRIES();
 }
 /* }}} */
+
+/* {{{ od_compile_file
+ */
+static zend_op_array *od_compile_file(zend_file_handle* file_handle, int type TSRMLS_DC) {
+	zend_op_array *op_array;
+	op_array = native_compile_file (file_handle, type TSRMLS_CC);
+
+	if (OPDUMPER_G(active)) {
+		int i;
+		for (i = 0; i < op_array->last; i++) {
+			zend_op op = op_array->opcodes[i];
+			od_dump_op(op);
+		}
+	}
+	return NULL;
+}
+/* }}} */
+
+static zend_op_array *od_compile_string(zval *source_string, char *filename TSRMLS_DC) {
+	return NULL;
+}
 
 
 /*
