@@ -1,6 +1,6 @@
 OPDUMPER
 --------
-opdumper - A tiny and simple and php extension that dumps opcodes of PHP script.
+opdumper - A tiny and simple php extension that dumps opcodes of PHP script.
 
 VERSION
 -------
@@ -9,3 +9,13 @@ version: 0.0.1
 SUPPORT
 -------
 PHP 5.3 / PHP 5.4 support
+
+INSTALL
+-------
+	phpize
+	./configure
+	make & make install
+
+DUMP OPCODE
+-----------
+	php -dopdumer.active=1 foo.php
