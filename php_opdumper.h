@@ -46,6 +46,7 @@ PHP_FUNCTION(confirm_opdumper_compiled);	/* For testing, remove later. */
 
 ZEND_BEGIN_MODULE_GLOBALS(opdumper)
 	long  active;
+	long  raw;
 ZEND_END_MODULE_GLOBALS(opdumper)
 
 /* In every utility function you add that needs to use variables 

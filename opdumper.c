@@ -26,6 +26,7 @@
 #include "php_ini.h"
 #include "ext/standard/info.h"
 #include "php_opdumper.h"
+#include "opcodes.h"
 #include "dumper.h"
 
 static zend_op_array* (*native_compile_file)(zend_file_handle* file_handle, int type TSRMLS_DC);
@@ -76,6 +77,7 @@ ZEND_GET_MODULE(opdumper)
  */
 PHP_INI_BEGIN()
     STD_PHP_INI_ENTRY("opdumper.active", "0", PHP_INI_SYSTEM, OnUpdateLong, active, zend_opdumper_globals, opdumper_globals)
+    STD_PHP_INI_ENTRY("opdumper.raw",    "0", PHP_INI_SYSTEM, OnUpdateLong, raw,    zend_opdumper_globals, opdumper_globals)
 PHP_INI_END()
 /* }}} */
 
@@ -84,6 +86,7 @@ PHP_INI_END()
 static void php_opdumper_init_globals(zend_opdumper_globals *opdumper_globals)
 {
 	opdumper_globals->active = 0;
+	opdumper_globals->raw = 0;
 }
 /* }}} */
 
@@ -160,7 +163,11 @@ static zend_op_array *od_compile_file(zend_file_handle* file_handle, int type TS
 		int i;
 		for (i = 0; i < op_array->last; i++) {
 			zend_op op = op_array->opcodes[i];
-			od_dump_op(op);
+			if (OPDUMPER_G(raw)) {
+				od_raw_dump_op(op);
+			} else {
+				od_dump_op(op);
+			}
 		}
 	}
 	return NULL;
