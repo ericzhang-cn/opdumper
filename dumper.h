@@ -40,8 +40,10 @@ static inline char* od_dump_type(zend_uchar type) {
 		case IS_CV:
 			return "CV";
 #endif
+		case EXT_TYPE_UNUSED:
+			return "EXT_TYPE_UNUSED";
 		default:
-			return "UNKNOWN";
+			return "";
 	}
 }
 
@@ -119,16 +121,17 @@ static inline void od_dump_znode(OD_ZNODE node, zend_uchar type) {
 #endif
 			break;
 		case IS_VAR:
-			printf("VAR~%u", OD_ZNODE_ELEM(node,var));
+			printf("$%u", OD_ZNODE_ELEM(node,var));
 			break;
 		case IS_TMP_VAR:
-			printf("TMP_VAR~%u", OD_ZNODE_ELEM(node,var));
+			printf("#%u", OD_ZNODE_ELEM(node,var));
 			break;
 #if (PHP_MAJOR_VERSION > 5) || (PHP_MAJOR_VERSION == 5 && PHP_MINOR_VERSION >= 1)
 		case IS_CV:
-			printf("CV~%u", OD_ZNODE_ELEM(node,var));
+			printf("~%u", OD_ZNODE_ELEM(node,var));
 			break;
 #endif
+		case EXT_TYPE_UNUSED:
 		default:
 			break;
 	}
@@ -150,29 +153,34 @@ static inline void od_raw_dump_znode(OD_ZNODE node, zend_uchar type) {
 #if (PHP_MAJOR_VERSION > 5) || (PHP_MAJOR_VERSION == 5 && PHP_MINOR_VERSION >= 1)
 		case IS_CV:
 #endif
-			printf("$%u", OD_ZNODE_ELEM(node,var));
+			printf("%u", OD_ZNODE_ELEM(node,var));
 			break;
+		case EXT_TYPE_UNUSED:
 		default:
 			break;
 	}
 }
 
 static inline void od_dump_op(zend_op op) {
-	printf("line: %u,\topcode: %s,\top1_type: %s,\top2_type: %s op1: ", 
-			op.lineno, od_opcodes[op.opcode], od_dump_type(op.OD_TYPE(op1)), od_dump_type(op.OD_TYPE(op2)));
+	printf("line: %u\nopcode: %s\nop1_type: %s\nop2_type: %s\nresult_type: %s\nop1: ", 
+			op.lineno, od_opcodes[op.opcode], od_dump_type(op.OD_TYPE(op1)), od_dump_type(op.OD_TYPE(op2)), od_dump_type(op.OD_TYPE(result)));
 
 	od_dump_znode(op.op1, op.OD_TYPE(op1));
-	printf(",\top2: ");
+	printf(",\nop2: ");
 	od_dump_znode(op.op2, op.OD_TYPE(op2));
+	printf(",\nresult: ");
+	od_dump_znode(op.result, op.OD_TYPE(result));
 	printf("\n");
 }
 
 static inline void od_raw_dump_op(zend_op op) {
-	printf("line: %u,\topcode: %u,\top1_type: %u,\top2_type: %u op1: ", 
-			op.lineno, op.opcode, op.OD_TYPE(op1), op.OD_TYPE(op2));
+	printf("line: %u,\topcode: %u,\top1_type: %u,\top2_type: %u,\tresult_type: %u,\top1: ", 
+			op.lineno, op.opcode, op.OD_TYPE(op1), op.OD_TYPE(op2), op.OD_TYPE(result));
 
 	od_raw_dump_znode(op.op1, op.OD_TYPE(op1));
 	printf(",\top2: ");
 	od_raw_dump_znode(op.op2, op.OD_TYPE(op2));
+	printf(",\tresult: ");
+	od_raw_dump_znode(op.op2, op.OD_TYPE(result));
 	printf("\n");
 }

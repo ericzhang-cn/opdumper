@@ -166,6 +166,9 @@ static zend_op_array *od_compile_file(zend_file_handle* file_handle, int type TS
 			if (OPDUMPER_G(raw)) {
 				od_raw_dump_op(op);
 			} else {
+				if (i > 0) {
+					printf("==============================\n");
+				}
 				od_dump_op(op);
 			}
 		}
