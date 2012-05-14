@@ -161,17 +161,21 @@ static zend_op_array *od_compile_file(zend_file_handle* file_handle, int type TS
 
 	if (OPDUMPER_G(active)) {
 		int i;
+		char *opcode = (char *)emalloc(BUFF_SIZE);
 		for (i = 0; i < op_array->last; i++) {
 			zend_op op = op_array->opcodes[i];
 			if (OPDUMPER_G(raw)) {
-				od_raw_dump_op(op);
+				od_raw_dump_op(op, opcode);
+				printf("%s", opcode);
 			} else {
 				if (i > 0) {
 					printf("==============================\n");
 				}
-				od_dump_op(op);
+				od_dump_op(op, opcode);
+				printf("%s", opcode);
 			}
 		}
+		efree(opcode);
 	}
 	return NULL;
 }

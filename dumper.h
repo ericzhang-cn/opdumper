@@ -26,6 +26,8 @@
 # define OD_ZNODE_ELEM(z,v) z.u.v
 #endif
 
+#define BUFF_SIZE 4096
+
 static inline char* od_dump_type(zend_uchar type) {
 	switch (type) {
 		case IS_UNUSED:
@@ -45,104 +47,107 @@ static inline char* od_dump_type(zend_uchar type) {
 	}
 }
 
-static inline void od_dump_zval(zval val) {
+static inline void od_dump_zval(zval val, char *output) {
 	switch (val.type) {
 		case IS_NULL:
-			printf("NULL");
+			sprintf(output, "NULL");
 			break;
 		case IS_LONG:
-			printf("%ld", val.value.lval);
+			sprintf(output, "%ld", val.value.lval);
 			break;
 		case IS_DOUBLE:
-			printf("%g", val.value.lval);
+			sprintf(output, "%g", val.value.lval);
 			break;
 		case IS_STRING:
-			printf("%s", val.value.str.val);
+			sprintf(output, "%s", val.value.str.val);
 			break;
 		case IS_BOOL:
-			printf(val.value.lval != 0l ? "TRUE" : "FALSE");
+			sprintf(output, val.value.lval != 0 ? "TRUE" : "FALSE");
 			break;
 		case IS_RESOURCE:
-			printf("#%ld", val.value.lval);
+			sprintf(output, "res#%ld", val.value.lval);
 			break;
 		case IS_ARRAY:
-			printf("[ARRAY]");
+			sprintf(output, "[ARRAY]");
 			break;
 		case IS_OBJECT:
-			printf("[OBJECT]");
+			sprintf(output, "[OBJECT]");
 			break;
 		case IS_CONSTANT:
-			printf("[CONSTANT]");
+			sprintf(output, "[CONSTANT]");
 			break;
 		case IS_CONSTANT_ARRAY:
-			printf("[CONSTANT_ARRAY]");
+			sprintf(output, "[CONSTANT_ARRAY");
 			break;
 		default:
-			printf("[UNKNOWN]");
+			sprintf(output, "[UNKNOWN]");
 			break;
 	}
 }
 
-static inline void od_raw_dump_zval(zval val) {
+static inline void od_raw_dump_zval(zval val, char *output) {
 	switch (val.type) {
 		case IS_NULL:
 		case IS_LONG:
 		case IS_BOOL:
 		case IS_RESOURCE:
-			printf("%ld", val.value.lval);
+			sprintf(output, "%ld", val.value.lval);
 			break;
 		case IS_DOUBLE:
-			printf("%g", val.value.lval);
+			sprintf(output, "%g", val.value.lval);
 			break;
 		case IS_STRING:
-			printf("%s", val.value.str.val);
+			sprintf(output, "%s", val.value.str.val);
 			break;
 		case IS_ARRAY:
 		case IS_OBJECT:
 		case IS_CONSTANT:
 		case IS_CONSTANT_ARRAY:
 		default:
+			sprintf(output, "");
 			break;
 	}
 }
 
-static inline void od_dump_znode(OD_ZNODE node, zend_uchar type) {
+static inline void od_dump_znode(OD_ZNODE node, zend_uchar type, char *output) {
 	switch (type) {
 		case IS_UNUSED:
-			printf("UNUSED");
+			sprintf(output, "UNUSED");
 			break;
 		case IS_CONST:
 #if PHP_VERSION_ID >= 50399
-			od_dump_zval(*node.zv);
+			od_dump_zval(*node.zv, output);
 #else
-			od_dump_zval(node.u.constant);
+			od_dump_zval(node.u.constant, output);
 #endif
 			break;
 		case IS_VAR:
-			printf("$%u", OD_ZNODE_ELEM(node,var));
+			sprintf(output, "$%u", OD_ZNODE_ELEM(node,var));
 			break;
 		case IS_TMP_VAR:
-			printf("#%u", OD_ZNODE_ELEM(node,var));
+			sprintf(output, "#%u", OD_ZNODE_ELEM(node,var));
 			break;
 #if (PHP_MAJOR_VERSION > 5) || (PHP_MAJOR_VERSION == 5 && PHP_MINOR_VERSION >= 1)
 		case IS_CV:
-			printf("~%u", OD_ZNODE_ELEM(node,var));
+			sprintf(output, "~%u", OD_ZNODE_ELEM(node,var));
 			break;
 #endif
 		default:
+			sprintf(output, "");
 			break;
 	}
 }
 
-static inline void od_raw_dump_znode(OD_ZNODE node, zend_uchar type) {
+static inline void od_raw_dump_znode(OD_ZNODE node, zend_uchar type, char *output) {
 	switch (type) {
 		case IS_UNUSED:
+			sprintf(output, "");
 			break;
 		case IS_CONST:
 #if PHP_VERSION_ID >= 50399
-			od_raw_dump_zval(*node.zv);
+			od_raw_dump_zval(*node.zv, output);
 #else
-			od_raw_dump_zval(node.u.constant);
+			od_raw_dump_zval(node.u.constant, output);
 #endif
 			break;
 		case IS_VAR:
@@ -150,33 +155,58 @@ static inline void od_raw_dump_znode(OD_ZNODE node, zend_uchar type) {
 #if (PHP_MAJOR_VERSION > 5) || (PHP_MAJOR_VERSION == 5 && PHP_MINOR_VERSION >= 1)
 		case IS_CV:
 #endif
-			printf("%u", OD_ZNODE_ELEM(node,var));
+			sprintf(output, "%u", OD_ZNODE_ELEM(node,var));
 			break;
 		default:
+			sprintf(output, "");
 			break;
 	}
 }
 
-static inline void od_dump_op(zend_op op) {
-	printf("line: %u\nopcode: %s\nop1_type: %s\nop2_type: %s\nresult_type: %s\nop1: ", 
-			op.lineno, od_opcodes[op.opcode], od_dump_type(op.OD_TYPE(op1)), od_dump_type(op.OD_TYPE(op2)), od_dump_type(op.OD_TYPE(result)));
+static inline void od_dump_op(zend_op op, char *opcode) {
+	char *op1 = (char *)emalloc(BUFF_SIZE);
+	char *op2 = (char *)emalloc(BUFF_SIZE);
+	char *result = (char *)emalloc(BUFF_SIZE);
 
-	od_dump_znode(op.op1, op.OD_TYPE(op1));
-	printf(",\nop2: ");
-	od_dump_znode(op.op2, op.OD_TYPE(op2));
-	printf(",\nresult: ");
-	od_dump_znode(op.result, op.OD_TYPE(result));
-	printf("\n");
+	od_dump_znode(op.op1, op.OD_TYPE(op1), op1);
+	od_dump_znode(op.op2, op.OD_TYPE(op2), op2);
+	od_dump_znode(op.result, op.OD_TYPE(result), result);
+
+	sprintf(opcode, "line: %u\nopcode: %s\nop1_type: %s\nop2_type: %s\nresult_type: %s\nop1: %s\nop2: %s\nresult: %s\n", 
+			op.lineno, 
+			od_opcodes[op.opcode], 
+			od_dump_type(op.OD_TYPE(op1)), 
+			od_dump_type(op.OD_TYPE(op2)), 
+			od_dump_type(op.OD_TYPE(result)), 
+			op1, 
+			op2, 
+			result);
+
+	efree(op1);
+	efree(op2);
+	efree(result);
 }
 
-static inline void od_raw_dump_op(zend_op op) {
-	printf("line: %u,\topcode: %u,\top1_type: %u,\top2_type: %u,\tresult_type: %u,\top1: ", 
-			op.lineno, op.opcode, op.OD_TYPE(op1), op.OD_TYPE(op2), op.OD_TYPE(result));
+static inline void od_raw_dump_op(zend_op op, char *opcode) {
+	char *op1 = (char *)emalloc(BUFF_SIZE);
+	char *op2 = (char *)emalloc(BUFF_SIZE);
+	char *result = (char *)emalloc(BUFF_SIZE);
 
-	od_raw_dump_znode(op.op1, op.OD_TYPE(op1));
-	printf(",\top2: ");
-	od_raw_dump_znode(op.op2, op.OD_TYPE(op2));
-	printf(",\tresult: ");
-	od_raw_dump_znode(op.op2, op.OD_TYPE(result));
-	printf("\n");
+	od_dump_znode(op.op1, op.OD_TYPE(op1), op1);
+	od_dump_znode(op.op2, op.OD_TYPE(op2), op2);
+	od_dump_znode(op.result, op.OD_TYPE(result), result);
+
+	sprintf(opcode, "line: %u\topcode: %u\top1_type: %u\top2_type: %u\tresult_type: %u\top1: %s\top2: %s\tresult: %s\n", 
+			op.lineno, 
+			op.opcode, 
+			op.OD_TYPE(op1), 
+			op.OD_TYPE(op2), 
+			op.OD_TYPE(result), 
+			op1, 
+			op2, 
+			result);
+
+	efree(op1);
+	efree(op2);
+	efree(result);
 }
