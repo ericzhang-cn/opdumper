@@ -40,8 +40,6 @@ static inline char* od_dump_type(zend_uchar type) {
 		case IS_CV:
 			return "CV";
 #endif
-		case EXT_TYPE_UNUSED:
-			return "EXT_TYPE_UNUSED";
 		default:
 			return "";
 	}
@@ -131,7 +129,6 @@ static inline void od_dump_znode(OD_ZNODE node, zend_uchar type) {
 			printf("~%u", OD_ZNODE_ELEM(node,var));
 			break;
 #endif
-		case EXT_TYPE_UNUSED:
 		default:
 			break;
 	}
@@ -155,7 +152,6 @@ static inline void od_raw_dump_znode(OD_ZNODE node, zend_uchar type) {
 #endif
 			printf("%u", OD_ZNODE_ELEM(node,var));
 			break;
-		case EXT_TYPE_UNUSED:
 		default:
 			break;
 	}
