@@ -30,7 +30,7 @@
 #include "dumper.h"
 
 static zend_op_array* (*native_compile_file)(zend_file_handle* file_handle, int type TSRMLS_DC);
-static zend_op_array* od_compile_file(zend_file_handle*, int TSRMLS_DC);
+static zend_op_array* od_compile_file(zend_file_handle*, int type TSRMLS_DC);
 
 static zend_op_array* (*native_compile_string)(zval *source_string, char *filename TSRMLS_DC);
 static zend_op_array* od_compile_string(zval *source_string, char *filename TSRMLS_DC);
@@ -67,8 +67,41 @@ PHP_FUNCTION(od_dump_opcodes_string) {
 	*return_value = *opcodes_array;
 }
 
+PHP_FUNCTION(od_dump_opcodes_file) {
+	int i;
+	zval *file, *opcodes_array;
+	zend_op_array *op_array;
+	zend_file_handle file_handle;
+
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "z", &file) == FAILURE) {
+		return;
+	}
+
+	file_handle.type = ZEND_HANDLE_FILENAME;
+	file_handle.filename = Z_STRVAL_P(file);
+	file_handle.free_filename = 0;
+	file_handle.opened_path = NULL;
+
+	MAKE_STD_ZVAL(opcodes_array);
+	array_init(opcodes_array);
+
+	op_array = zend_compile_file(&file_handle, ZEND_INCLUDE TSRMLS_CC);
+	for (i = 0; i < op_array->last; i++) {
+		zend_op op = op_array->opcodes[i];
+		add_index_zval(opcodes_array, i, od_dump_op_array(op));
+	}
+
+	zend_destroy_file_handle(&file_handle TSRMLS_CC);
+
+	*return_value = *opcodes_array;
+}
+
 ZEND_BEGIN_ARG_INFO(arginfo_od_dump_opcodes_string, 0)
 	ZEND_ARG_INFO(0, php_script)
+ZEND_END_ARG_INFO()
+
+ZEND_BEGIN_ARG_INFO(arginfo_od_dump_opcodes_file, 0)
+	ZEND_ARG_INFO(0, filename)
 ZEND_END_ARG_INFO()
 /* }}} */
 
@@ -78,6 +111,7 @@ ZEND_END_ARG_INFO()
  */
 const zend_function_entry opdumper_functions[] = {
 	PHP_FE(od_dump_opcodes_string, arginfo_od_dump_opcodes_string)
+	PHP_FE(od_dump_opcodes_file, arginfo_od_dump_opcodes_file)
 	PHP_FE_END	/* Must be the last line in opdumper_functions[] */
 };
 /* }}} */
