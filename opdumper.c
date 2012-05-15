@@ -59,6 +59,9 @@ PHP_FUNCTION(od_dump_opcodes_string) {
 	array_init(opcodes_array);
 
 	op_array = zend_compile_string (zv, "" TSRMLS_CC);
+	if (! op_array) {
+		return;
+	}
 	for (i = 0; i < op_array->last; i++) {
 		zend_op op = op_array->opcodes[i];
 		add_index_zval(opcodes_array, i, od_dump_op_array(op));
@@ -86,6 +89,9 @@ PHP_FUNCTION(od_dump_opcodes_file) {
 	array_init(opcodes_array);
 
 	op_array = zend_compile_file(&file_handle, ZEND_INCLUDE TSRMLS_CC);
+	if (! op_array) {
+		return;
+	}
 	for (i = 0; i < op_array->last; i++) {
 		zend_op op = op_array->opcodes[i];
 		add_index_zval(opcodes_array, i, od_dump_op_array(op));
@@ -226,7 +232,7 @@ static zend_op_array *od_compile_file(zend_file_handle* file_handle, int type TS
 	zend_op_array *op_array;
 	op_array = native_compile_file (file_handle, type TSRMLS_CC);
 
-	if (OPDUMPER_G(active)) {
+	if (op_array && OPDUMPER_G(active)) {
 		int i;
 		char *opcode = (char *)emalloc(BUFF_SIZE);
 		for (i = 0; i < op_array->last; i++) {
@@ -254,7 +260,7 @@ static zend_op_array *od_compile_string(zval *source_string, char *filename TSRM
 	zend_op_array *op_array;
 	op_array = native_compile_string (source_string, filename TSRMLS_CC);
 
-	if (OPDUMPER_G(active)) {
+	if (op_array && OPDUMPER_G(active)) {
 		int i;
 		char *opcode = (char *)emalloc(BUFF_SIZE);
 		for (i = 0; i < op_array->last; i++) {
