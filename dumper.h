@@ -163,6 +163,34 @@ static inline void od_raw_dump_znode(OD_ZNODE node, zend_uchar type, char *outpu
 	}
 }
 
+static inline zval* od_dump_op_array(zend_op op) {
+	zval *opcode;
+	char *op1 = (char *)emalloc(BUFF_SIZE);
+	char *op2 = (char *)emalloc(BUFF_SIZE);
+	char *result = (char *)emalloc(BUFF_SIZE);
+
+	od_dump_znode(op.op1, op.OD_TYPE(op1), op1);
+	od_dump_znode(op.op2, op.OD_TYPE(op2), op2);
+	od_dump_znode(op.result, op.OD_TYPE(result), result);
+
+	MAKE_STD_ZVAL(opcode);
+	array_init(opcode);
+	add_assoc_long(opcode, "lineno", op.lineno);
+	add_assoc_string(opcode, "opcode", (char *)od_opcodes[op.opcode], 1);
+	add_assoc_string(opcode, "op1_type", od_dump_type(op.OD_TYPE(op1)), 1);
+	add_assoc_string(opcode, "op2_type", od_dump_type(op.OD_TYPE(op2)), 1);
+	add_assoc_string(opcode, "result_type", od_dump_type(op.OD_TYPE(result)), 1);
+	add_assoc_string(opcode, "op1", op1, 1);
+	add_assoc_string(opcode, "op2", op2, 1);
+	add_assoc_string(opcode, "result", result, 1);
+
+	efree(op1);
+	efree(op2);
+	efree(result);
+
+	return opcode;
+}
+
 static inline void od_dump_op(zend_op op, char *opcode) {
 	char *op1 = (char *)emalloc(BUFF_SIZE);
 	char *op2 = (char *)emalloc(BUFF_SIZE);

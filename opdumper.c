@@ -40,11 +40,44 @@ ZEND_DECLARE_MODULE_GLOBALS(opdumper)
 /* True global resources - no need for thread safety here */
 static int le_opdumper;
 
+/* {{{ PHP_FUNCTION
+ */
+PHP_FUNCTION(od_dump_opcodes_string) {
+	char *php_script;
+	int php_script_len, i;
+	zval *zv, *opcodes_array;
+	zend_op_array *op_array;
+
+	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s", &php_script, &php_script_len) == FAILURE) {
+		return;
+	}
+
+	MAKE_STD_ZVAL(zv);
+	ZVAL_STRINGL(zv, php_script, php_script_len, 0);
+
+	MAKE_STD_ZVAL(opcodes_array);
+	array_init(opcodes_array);
+
+	op_array = zend_compile_string (zv, "" TSRMLS_CC);
+	for (i = 0; i < op_array->last; i++) {
+		zend_op op = op_array->opcodes[i];
+		add_index_zval(opcodes_array, i, od_dump_op_array(op));
+	}
+
+	*return_value = *opcodes_array;
+}
+
+ZEND_BEGIN_ARG_INFO(arginfo_od_dump_opcodes_string, 0)
+	ZEND_ARG_INFO(0, php_script)
+ZEND_END_ARG_INFO()
+/* }}} */
+
 /* {{{ opdumper_functions[]
  *
  * Every user visible function must have an entry in opdumper_functions[].
  */
 const zend_function_entry opdumper_functions[] = {
+	PHP_FE(od_dump_opcodes_string, arginfo_od_dump_opcodes_string)
 	PHP_FE_END	/* Must be the last line in opdumper_functions[] */
 };
 /* }}} */
