@@ -1,24 +1,34 @@
 OPDUMPER
---------
-opdumper - A tiny and simple php extension that dumps opcodes of PHP script.
+========
+opdumper = A tiny and simple php extension that dumps opcodes of PHP script.
 
 VERSION
--------
+=======
 version: 0.0.1
 
 SUPPORT
--------
+=======
 PHP 5.3 / PHP 5.4 support
 
 INSTALL
--------
+=======
 	phpize
 	./configure
 	make & make install
 
-DUMP OPCODE
------------
-* dump opcodes
-	php -dopdumer.active=1 foo.php
-* dump opcodes and keep raw code
-	php -dopdumer.active=1 -dopdumer.raw=1 foo.php
+API
+===
+CLI API
+-------
+Dump opcodes with command line: 
+* php -d opdumer.active=1 foo.php
+
+PHP FUNCTION API
+----------------
+Dump opcodes by PHP FUNCTION, both functions return an array that contains opcodes.
+* ARRAY od_dump_opcodes_string ([STRING] php_script) 
+* ARRAY od_dump_opcodes_file   ([STRING] filename) 
+
+WEB SERVICE
+===========
+This is the [website](http://supercompiler.com/app/opcode_dumper) that dumping opcodes online.
