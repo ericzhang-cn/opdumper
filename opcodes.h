@@ -1,5 +1,5 @@
-#ifndef OD_OPCODES
-#define OD_OPCODES
+#ifndef OD_OPCODES_H
+#define OD_OPCODES_H
 
 static const char* od_opcodes[] = {
 /* 0 */ "ZEND_NOP",

@@ -16,8 +16,8 @@
   +----------------------------------------------------------------------+
 */
 
-#ifndef OD_DUMPER
-#define OD_DUMPER
+#ifndef OD_DUMPER_H
+#define OD_DUMPER_H
 
 #if PHP_VERSION_ID >= 50399
 # define OD_ZNODE znode_op
