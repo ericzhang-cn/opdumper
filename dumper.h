@@ -16,6 +16,9 @@
   +----------------------------------------------------------------------+
 */
 
+#ifndef OD_DUMPER
+#define OD_DUMPER
+
 #if PHP_VERSION_ID >= 50399
 # define OD_ZNODE znode_op
 # define OD_TYPE(z) z##_type
@@ -238,3 +241,5 @@ static inline void od_raw_dump_op(zend_op op, char *opcode) {
 	efree(op2);
 	efree(result);
 }
+
+#endif

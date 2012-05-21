@@ -1,3 +1,6 @@
+#ifndef OD_OPCODES
+#define OD_OPCODES
+
 static const char* od_opcodes[] = {
 /* 0 */ "ZEND_NOP",
 /* 1 */ "ZEND_ADD",
@@ -159,3 +162,5 @@ static const char* od_opcodes[] = {
 /* 157 */ "ZEND_QM_ASSIGN_VAR",
 /* 158 */ "ZEND_JMP_SET_VAR"
 };
+
+#endif
