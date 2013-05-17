@@ -1,4 +1,3 @@
-## OPDUMPER
 opdumper - A tiny and simple php extension that dumps opcodes of PHP script.
 
 ## VERSION
